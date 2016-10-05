@@ -19,6 +19,42 @@ module Game.Resources
 A module for managing resources needed for games.
 This currently only manages textures, but a future version might add sounds, 3d-meshes etc..
 
+Suggested import:
+
+    import Game.Resources as Resources exposing (Resources)
+
+# Usage
+Add `resources` to your `initialModel`:
+
+    initialModel =
+        { ..
+        , resources = Resources.init
+        }
+
+Add the resources message to your `Msg`
+
+    type Msg
+        = ..
+        | Resources Resources.Msg
+
+Load textures at `init`:
+
+    init =
+        initialModel
+            ! [ Resources.loadTextures [ "images/box.png" ]
+                    |> Cmd.map Resources
+              ]
+
+Add a case for the `Resources.Msg` in `update`
+
+    Resources msg ->
+        { model | resources = Resources.update msg model.resources } ! []
+
+Request your texture when you need it
+
+    Resources.getTexture "images/box.png" resources
+
+
 # Resources
 @docs Resources, init, update, Msg
 
@@ -27,6 +63,7 @@ This currently only manages textures, but a future version might add sounds, 3d-
 
 @docs loadTexturesWithConfig, LoadTextureConfig
 
+These are just an alias for the same functions in the WebGL library
 @docs TextureFilter, linear, nearest
 
 @docs textureSize
