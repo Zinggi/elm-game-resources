@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
     "summary": "Manages game resources (currently only textures)",
-    "repository": "https://github.com/Zinggi/elm-2d-game-examples.git",
+    "repository": "https://github.com/Zinggi/elm-game-resources.git",
     "license": "BSD3",
     "source-directories": [
         "src"
