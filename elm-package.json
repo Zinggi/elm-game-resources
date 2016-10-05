@@ -1,0 +1,17 @@
+{
+    "version": "1.0.0",
+    "summary": "Manages game resources (currently only textures)",
+    "repository": "https://github.com/user/project.git",
+    "license": "BSD3",
+    "source-directories": [
+        "src"
+    ],
+    "exposed-modules": [
+        "Game.Resources"
+    ],
+    "dependencies": {
+        "elm-community/elm-webgl": "3.0.3 <= v < 4.0.0",
+        "elm-lang/core": "4.0.5 <= v < 5.0.0"
+    },
+    "elm-version": "0.17.1 <= v < 0.18.0"
+}
