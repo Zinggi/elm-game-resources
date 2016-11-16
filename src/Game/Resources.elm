@@ -98,8 +98,7 @@ nearest =
 
 {-| -}
 type Msg
-    = LoadTexture String Texture
-    | FailedToLoad String
+    = LoadedTexture String (Result WebGL.Error Texture)
 
 
 {-|
@@ -129,8 +128,7 @@ loadTextures urls =
     urls
         |> List.map
             (\url ->
-                Task.perform (\_ -> FailedToLoad url)
-                    (LoadTexture url)
+                Task.attempt (LoadedTexture url)
                     (WebGL.loadTexture url)
             )
         |> Cmd.batch
@@ -144,7 +142,7 @@ type alias LoadTextureConfig msg =
 
 
 {-|
-Same as loadTextures, but gives you more controll
+Same as loadTextures, but gives you more control
 by being able to react to a texture loading error
 and by specifying a texture filter.
 
@@ -157,27 +155,35 @@ and by specifying a texture filter.
 -}
 loadTexturesWithConfig : LoadTextureConfig msg -> List ( TextureFilter, String ) -> Cmd msg
 loadTexturesWithConfig { success, failed } urls =
-    urls
-        |> List.map
-            (\( filter, url ) ->
-                Task.perform (\_ -> failed url)
-                    (\t -> success (LoadTexture url t))
-                    (WebGL.loadTextureWithFilter filter url)
-            )
-        |> Cmd.batch
+    let
+        handler url res =
+            case res of
+                Ok tex ->
+                    success (LoadedTexture url (Ok tex))
+
+                Err err ->
+                    failed url
+    in
+        urls
+            |> List.map
+                (\( filter, url ) ->
+                    Task.attempt (handler url)
+                        (WebGL.loadTextureWithFilter filter url)
+                )
+            |> Cmd.batch
 
 
 {-|
 -}
 update : Msg -> Resources -> Resources
-update msg (R res) =
-    case msg of
-        LoadTexture url t ->
-            R (Dict.insert url t res)
+update (LoadedTexture url result) (R res) =
+    case result of
+        Ok tex ->
+            R (Dict.insert url tex res)
 
-        FailedToLoad url ->
+        Err err ->
             R res
-                |> Debug.log ("failed to load texture: " ++ toString url)
+                |> Debug.log ("failed to load texture: " ++ toString url ++ " - \n - " ++ toString err)
 
 
 {-|
