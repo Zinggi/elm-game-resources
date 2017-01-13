@@ -1,11 +1,6 @@
 module Game.Resources
     exposing
-        ( Texture
-        , TextureFilter
-        , linear
-        , nearest
-        , textureSize
-        , Msg
+        ( Msg
         , Resources
         , init
         , loadTextures
@@ -59,46 +54,19 @@ Request your texture when you need it
 @docs Resources, init, update, Msg
 
 ## Textures
-@docs Texture, loadTextures, getTexture
+@docs loadTextures, getTexture
 
 @docs loadTexturesWithConfig, LoadTextureConfig
-
-These are just an alias for the same functions in the WebGL library
-@docs TextureFilter, linear, nearest
-
-@docs textureSize
 -}
 
 import Dict exposing (Dict)
 import Task
-import WebGL
-
-
-{-| -}
-type alias Texture =
-    WebGL.Texture
-
-
-{-| -}
-type alias TextureFilter =
-    WebGL.TextureFilter
-
-
-{-| -}
-linear : TextureFilter
-linear =
-    WebGL.Linear
-
-
-{-| -}
-nearest : TextureFilter
-nearest =
-    WebGL.Nearest
+import WebGL.Texture as Texture exposing (Texture)
 
 
 {-| -}
 type Msg
-    = LoadedTexture String (Result WebGL.Error Texture)
+    = LoadedTexture String (Result Texture.Error Texture)
 
 
 {-|
@@ -129,7 +97,7 @@ loadTextures urls =
         |> List.map
             (\url ->
                 Task.attempt (LoadedTexture url)
-                    (WebGL.loadTexture url)
+                    (Texture.load url)
             )
         |> Cmd.batch
 
@@ -153,7 +121,7 @@ and by specifying a texture filter.
         [ (linear, "images/blob.png"), (nearest, "images/box.jpeg") ]
 
 -}
-loadTexturesWithConfig : LoadTextureConfig msg -> List ( TextureFilter, String ) -> Cmd msg
+loadTexturesWithConfig : LoadTextureConfig msg -> List ( Texture.Options, String ) -> Cmd msg
 loadTexturesWithConfig { success, failed } urls =
     let
         handler url res =
@@ -168,7 +136,7 @@ loadTexturesWithConfig { success, failed } urls =
             |> List.map
                 (\( filter, url ) ->
                     Task.attempt (handler url)
-                        (WebGL.loadTextureWithFilter filter url)
+                        (Texture.loadWith filter url)
                 )
             |> Cmd.batch
 
@@ -192,10 +160,3 @@ Returns a maybe as the texture might not be loaded yet.
 getTexture : String -> Resources -> Maybe Texture
 getTexture url (R res) =
     Dict.get url res
-
-
-{-|
--}
-textureSize : Texture -> ( Int, Int )
-textureSize =
-    WebGL.textureSize
