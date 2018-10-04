@@ -1,24 +1,19 @@
-module Game.Resources
-    exposing
-        ( Msg
-        , Resources
-        , init
-        , loadTextures
-        , LoadTextureConfig
-        , loadTexturesWithConfig
-        , getTexture
-        , update
-        )
+module Game.Resources exposing
+    ( Resources, init, update, Msg
+    , loadTextures, getTexture
+    , loadTexturesWithConfig, LoadTextureConfig
+    )
 
-{-|
-A module for managing resources needed for games.
+{-| A module for managing resources needed for games.
 This currently only manages textures, but a future version might add sounds, 3d-meshes etc..
 
 Suggested import:
 
     import Game.Resources as Resources exposing (Resources)
 
+
 # Usage
+
 Add `resources` to your `initialModel`:
 
     initialModel =
@@ -35,10 +30,10 @@ Add the resources message to your `Msg`
 Load textures at `init`:
 
     init =
-        initialModel
-            ! [ Resources.loadTextures [ "images/box.png" ]
-                    |> Cmd.map Resources
-              ]
+        ( initialModel
+        , Resources.loadTextures [ "images/box.png" ]
+            |> Cmd.map Resources
+        )
 
 Add a case for the `Resources.Msg` in `update`
 
@@ -51,12 +46,16 @@ Request your texture when you need it
 
 
 # Resources
+
 @docs Resources, init, update, Msg
 
+
 ## Textures
+
 @docs loadTextures, getTexture
 
 @docs loadTexturesWithConfig, LoadTextureConfig
+
 -}
 
 import Dict exposing (Dict)
@@ -69,8 +68,7 @@ type Msg
     = LoadedTexture String (Result Texture.Error Texture)
 
 
-{-|
-The main type of this library
+{-| The main type of this library
 -}
 type Resources
     = R (Dict String Texture)
@@ -86,8 +84,7 @@ init =
 -- Loads a texture from the given url. PNG and JPEG are known to work, but other formats have not been as well-tested yet. Configurable filter.
 
 
-{-|
-Loads a list of textures from the given urls.
+{-| Loads a list of textures from the given urls.
 PNGs and JPEGs are known to work.
 For WebGL make sure that your textures have a dimension with a power of two, e.g. 2^n x 2^m
 -}
@@ -109,8 +106,7 @@ type alias LoadTextureConfig msg =
     }
 
 
-{-|
-Same as loadTextures, but gives you more control
+{-| Same as loadTextures, but gives you more control
 by being able to react to a texture loading error
 and by specifying a texture filter.
 
@@ -118,7 +114,7 @@ and by specifying a texture filter.
         { success = Resources
         , failed = LoadingTextureFailed
         }
-        [ (linear, "images/blob.png"), (nearest, "images/box.jpeg") ]
+        [ ( linear, "images/blob.png" ), ( nearest, "images/box.jpeg" ) ]
 
 -}
 loadTexturesWithConfig : LoadTextureConfig msg -> List ( Texture.Options, String ) -> Cmd msg
@@ -132,17 +128,16 @@ loadTexturesWithConfig { success, failed } urls =
                 Err err ->
                     failed url
     in
-        urls
-            |> List.map
-                (\( filter, url ) ->
-                    Task.attempt (handler url)
-                        (Texture.loadWith filter url)
-                )
-            |> Cmd.batch
+    urls
+        |> List.map
+            (\( filter, url ) ->
+                Task.attempt (handler url)
+                    (Texture.loadWith filter url)
+            )
+        |> Cmd.batch
 
 
-{-|
--}
+{-| -}
 update : Msg -> Resources -> Resources
 update (LoadedTexture url result) (R res) =
     case result of
@@ -151,11 +146,10 @@ update (LoadedTexture url result) (R res) =
 
         Err err ->
             R res
-                |> Debug.log ("failed to load texture: " ++ toString url ++ " - \n - " ++ toString err)
+                |> Debug.log ("failed to load texture: '" ++ url ++ "' - \n - " ++ Debug.toString err)
 
 
-{-|
-Returns a maybe as the texture might not be loaded yet.
+{-| Returns a maybe as the texture might not be loaded yet.
 -}
 getTexture : String -> Resources -> Maybe Texture
 getTexture url (R res) =
