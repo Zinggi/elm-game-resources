@@ -146,7 +146,6 @@ update (LoadedTexture url result) (R res) =
 
         Err err ->
             R res
-                |> Debug.log ("failed to load texture: '" ++ url ++ "' - \n - " ++ Debug.toString err)
 
 
 {-| Returns a maybe as the texture might not be loaded yet.
